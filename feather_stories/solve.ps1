@@ -1,84 +1,56 @@
+param(
+    [string]$DataDirectory = $(if ($PSScriptRoot) { $PSScriptRoot } else { (Get-Location).Path })
+)
+
 $ErrorActionPreference = "Stop"
 
-$obsPath = Join-Path $PSScriptRoot "observations.csv"
-$regPath = Join-Path $PSScriptRoot "ring_register.csv"
+$obsPath = Join-Path $DataDirectory "observations.csv"
+$regPath = Join-Path $DataDirectory "ring_register.csv"
 
 if (-not (Test-Path $obsPath) -or -not (Test-Path $regPath)) {
-    Write-Error "Missing observations.csv or ring_register.csv in $PSScriptRoot"
+    Write-Error "Missing observations.csv or ring_register.csv in $DataDirectory"
     exit 1
 }
 
-Write-Host "Loading datasets..." -ForegroundColor Cyan
-$register = Import-Csv $regPath
-$observations = Import-Csv $obsPath
+$species = "Ciconia ciconia"
+$register = @(Import-Csv $regPath)
+$knownRings = @($register | Where-Object { $_.species -eq $species } | ForEach-Object { $_.ring.Trim().ToUpper() })
 
-$knownRings = $register | ForEach-Object { $_.ring.Trim().ToUpper() } | Where-Object { $_.Length -eq 6 }
+$observations = @(Import-Csv $obsPath | Where-Object {
+    $_.species -eq $species -and $_.ring_read -cmatch '^[A-Z?]{6}$'
+})
 
-function Test-MatchesKnownRing {
-    param([string]$ReadRing, [string[]]$KnownList, [int]$MaxErrors = 1)
-    foreach ($known in $KnownList) {
+# Filter to Lower Prut Biosphere Reserve area (Cahul district / southern Moldova below 46.0N)
+$lowerPrut = @($observations | Where-Object {
+    $_.district -eq "Cahul" -or [double]$_.latitude -lt 46.0
+})
+
+# Exclude sightings matching any registered White Stork (allowing up to 1 misread)
+$unregistered = foreach ($row in $lowerPrut) {
+    $read = $row.ring_read.Trim().ToUpper()
+    $isKnown = $false
+    foreach ($known in $knownRings) {
         $errors = 0
         for ($i = 0; $i -lt 6; $i++) {
-            $c = $ReadRing[$i]
-            if ($c -ne '?' -and $c -ne $known[$i]) {
-                $errors++
-                if ($errors -gt $MaxErrors) { break }
-            }
+            if ($read[$i] -ne '?' -and $read[$i] -ne $known[$i]) { $errors++ }
         }
-        if ($errors -le $MaxErrors) { return $true }
+        if ($errors -le 1) { $isKnown = $true; break }
     }
-    return $false
+    if (-not $isKnown) { $row }
 }
 
-$storkObs = $observations | Where-Object {
-    ($_.species -match "Ciconia ciconia" -or $_.common_name -match "White Stork") -and
-    -not [string]::IsNullOrWhiteSpace($_.ring_read)
+# Select the primary Lower Prut locality (L5819951 - Lake Beleu)
+$targetSite = $unregistered | Group-Object locality_id | Sort-Object Count -Descending | Select-Object -First 1
+
+# Reconstruct each of the 6 ring letters via majority voting (ignoring '?')
+$chars = for ($pos = 0; $pos -lt 6; $pos++) {
+    $targetSite.Group |
+        ForEach-Object { [string]$_.ring_read[$pos] } |
+        Where-Object { $_ -ne '?' } |
+        Group-Object |
+        Sort-Object Count -Descending |
+        Select-Object -First 1 -ExpandProperty Name
 }
 
-Write-Host "Total White Stork ring observations: $($storkObs.Count)"
-
-$unregisteredObs = @()
-foreach ($row in $storkObs) {
-    $ring = $row.ring_read.Trim().ToUpper()
-    if ($ring.Length -ne 6) { continue }
-    if (-not (Test-MatchesKnownRing -ReadRing $ring -KnownList $knownRings -MaxErrors 1)) {
-        $unregisteredObs += [PSCustomObject]@{
-            Ring     = $ring
-            District = $row.district
-            Lat      = [double]$row.latitude
-        }
-    }
-}
-
-Write-Host "Unregistered observations count: $($unregisteredObs.Count)" -ForegroundColor Yellow
-
-$lowerPrutObs = $unregisteredObs | Where-Object { $_.District -match "Cahul|Cantemir" -or $_.Lat -lt 46.2 }
-if ($lowerPrutObs.Count -eq 0) { $lowerPrutObs = $unregisteredObs }
-
-Write-Host "Lower Prut candidate sightings: $($lowerPrutObs.Count)" -ForegroundColor Green
-
-$topSeed = ($lowerPrutObs | Group-Object Ring | Sort-Object Count -Descending | Select-Object -First 1).Name
-$cluster = $lowerPrutObs | Where-Object {
-    $r = $_.Ring
-    $diff = 0
-    for ($i = 0; $i -lt 6; $i++) {
-        if ($r[$i] -ne '?' -and $topSeed[$i] -ne '?' -and $r[$i] -ne $topSeed[$i]) { $diff++ }
-    }
-    $diff -le 2
-}
-
-Write-Host "Target stork cluster size: $($cluster.Count)" -ForegroundColor Cyan
-
-$finalChars = for ($pos = 0; $pos -lt 6; $pos++) {
-    $letterStats = $cluster | ForEach-Object { $_.Ring[$pos] } | Where-Object { $_ -ne '?' } | Group-Object | Sort-Object Count -Descending
-    $summary = ($letterStats | ForEach-Object { "$($_.Name)($($_.Count))" }) -join ", "
-    Write-Host "Position $($pos + 1): $summary"
-    $letterStats[0].Name
-}
-
-$recoveredWord = -join $finalChars
-Write-Host ""
-Write-Host "==========================================" -ForegroundColor Green
-Write-Host "Recovered Ring: $recoveredWord" -ForegroundColor Green
-Write-Host "Final Flag:     SIGMOID_$recoveredWord" -ForegroundColor Green
-Write-Host "==========================================" -ForegroundColor Green
+$word = -join $chars
+Write-Output ("SIGMOID_" + $word)
