@@ -2,7 +2,7 @@ from pathlib import Path
 import html
 import json
 
-agents = """my frontier secure rush efficient economy counter endgame phased ratio bank tactical reply sequence tempo closing forecast expansion search endsearch defense preserve pressure frugal reserve stable""".split()
+agents = """my frontier secure rush efficient economy counter endgame phased ratio bank tactical reply sequence tempo closing forecast expansion search endsearch defense preserve pressure frugal reserve stable access leverage lasting initiative mobility exchange discovery center spread frontier_control""".split()
 evidence = Path("evidence")
 rows = []
 for number, agent in enumerate(agents, 1):
@@ -26,4 +26,5 @@ Path("explanation.html").write_text("""<!DOCTYPE html>
 <p><a href="evidence/practice.html">Practice replay</a> for arena 0, seed 144.</p>
 <table><thead><tr><th>Attempt</th><th>Agent and command</th><th>Games</th><th>Wins</th><th>Draws</th><th>Groups won</th><th>Evidence</th></tr></thead><tbody>
 """ + "\n".join(rows) + "\n</tbody></table></html>\n", encoding="utf-8")
+
 

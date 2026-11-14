@@ -1,0 +1,120 @@
+{
+  "prefix": "SIGMOID_",
+  "title": "The navigator\u2019s homeward chart",
+  "verse": [
+    "The five lights of home keep the Greek watch.",
+    "Each keeps its nearer companions before the farther.",
+    "Our foundation turns the alphabet, over and over.",
+    "For the homeward message, undo those turns."
+  ],
+  "stars": [
+    {
+      "x": 40,
+      "y": 88,
+      "size": 10,
+      "text": "N"
+    },
+    {
+      "x": 97.454,
+      "y": 197.819,
+      "size": 3.5,
+      "text": "C"
+    },
+    {
+      "x": 96,
+      "y": 28,
+      "size": 10,
+      "text": "E"
+    },
+    {
+      "x": 110.092,
+      "y": 137.003,
+      "size": 3.5,
+      "text": "U"
+    },
+    {
+      "x": 125.985,
+      "y": 169.57,
+      "size": 3.5,
+      "text": "V"
+    },
+    {
+      "x": 100,
+      "y": 180,
+      "size": 10,
+      "text": "T"
+    },
+    {
+      "x": 160,
+      "y": 76,
+      "size": 10,
+      "text": "C"
+    },
+    {
+      "x": 22.828,
+      "y": 82.603,
+      "size": 3.5,
+      "text": "M"
+    },
+    {
+      "x": 112.355,
+      "y": 20.482,
+      "size": 3.5,
+      "text": "Y"
+    },
+    {
+      "x": 46.086,
+      "y": 115.331,
+      "size": 3.5,
+      "text": "H"
+    },
+    {
+      "x": 56.943,
+      "y": 72.446,
+      "size": 3.5,
+      "text": "K"
+    },
+    {
+      "x": 176.997,
+      "y": 70.076,
+      "size": 3.5,
+      "text": "N"
+    },
+    {
+      "x": 145.319,
+      "y": 142.108,
+      "size": 3.5,
+      "text": "Z"
+    },
+    {
+      "x": 81.908,
+      "y": 165.799,
+      "size": 3.5,
+      "text": "E"
+    },
+    {
+      "x": 155.696,
+      "y": 98.594,
+      "size": 3.5,
+      "text": "V"
+    },
+    {
+      "x": 93.871,
+      "y": 50.901,
+      "size": 3.5,
+      "text": "Y"
+    },
+    {
+      "x": 132,
+      "y": 130,
+      "size": 7,
+      "text": "I"
+    }
+  ],
+  "view_box": [
+    0,
+    -15,
+    220,
+    250
+  ]
+}
