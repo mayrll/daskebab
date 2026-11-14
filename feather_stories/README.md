@@ -9,3 +9,9 @@ Download the two CSVs from the [task data folder](https://drive.google.com/drive
 ```powershell
 ./feather_stories/solve.ps1 -DataDirectory 'path/to/csv-folder'
 ```
+
+## Submission status and cross-check
+
+The platform returned 0 points for this flag. It gave no specific reason. Treat the flag above as a candidate supported by the supplied files.
+
+Run `./feather_stories/audit.ps1 -DataDirectory 'path/to/csv-folder'` to compare localities with at least five readings. The script reports consensus codes that occur verbatim and are absent from the register. The five exact readings of RHGLWQ came from five distinct observer groups. The other two consensus codes with five exact readings were IYRNDQ (Căușeni, two observer groups) and EKBDAO (Șoldănești, one observer group).
